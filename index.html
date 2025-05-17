@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ATM Simulator</title>
+  <style>
+    body {
+      background: #f4faff;
+      color: #333;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .container {
+      background: #ffffff;
+      border-radius: 15px;
+      width: 350px;
+      padding: 25px;
+      box-shadow: 0 0 20px rgba(0, 191, 255, 0.2);
+    }
+
+    h2, h3 {
+      text-align: center;
+      color: #00bfff;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      background: #00bfff;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #0099cc;
+    }
+
+    input[type="text"], input[type="password"], input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 7px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .message {
+      margin: 15px 0;
+      color: #d63031;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    ul li {
+      background: #e0f7ff;
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 6px;
+      color: #333;
+    }
+
+    .credits {
+      background: #e6f7ff;
+      color: #333;
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      width: 350px;
+      text-align: center;
+      font-size: 14px;
+      box-shadow: 0 0 10px rgba(0, 191, 255, 0.2);
+    }
+
+    .credits strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+      color: #00bfff;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Main Menu -->
+  <div id="mainMenu">
+    <h2>Welcome to ATM Simulator</h2>
+    <button onclick="showSection('createAccount')">Create Account</button>
+    <button onclick="showSection('login')">Login</button>
+    <button onclick="exitATM()">Exit</button>
+  </div>
+
+  <!-- Create Account -->
+  <div id="createAccount" class="hidden">
+    <h3>Create New Account</h3>
+    <input type="text" id="createAccNo" placeholder="Account Number" />
+    <input type="password" id="createPin" placeholder="PIN" />
+    <input type="number" id="createBalance" placeholder="Initial Balance" />
+    <button onclick="createAccount()">Submit</button>
+    <button onclick="backToMain()">Back</button>
+    <p class="message" id="createMsg"></p>
+  </div>
+
+  <!-- Login -->
+  <div id="login" class="hidden">
+    <h3>Login</h3>
+    <input type="text" id="loginAccNo" placeholder="Account Number" />
+    <input type="password" id="loginPin" placeholder="PIN" />
+    <button onclick="login()">Login</button>
+    <button onclick="backToMain()">Back</button>
+    <p class="message" id="loginMsg"></p>
+  </div>
+
+  <!-- Transaction Menu -->
+  <div id="transactionMenu" class="hidden">
+    <h3>Welcome, <span id="userAcc"></span></h3>
+    <button onclick="verifyPin(viewBalance)">View Balance</button>
+    <button onclick="verifyPin(() => showSection('depositSection'))">Deposit</button>
+    <button onclick="showSection('withdrawSection')">Withdraw</button>
+    <button onclick="showTransactionHistory()">Transaction History</button>
+    <button onclick="showSection('resetPinSection')">Reset PIN</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Deposit Section -->
+  <div id="depositSection" class="hidden">
+    <h3>Deposit Money</h3>
+    <input type="number" id="depositAmount" placeholder="Amount" />
+    <button onclick="verifyPin(deposit)">Deposit</button>
+    <button onclick="showSection('transactionMenu')">Back</button>
+    <p class="message" id="depositMsg"></p>
+  </div>
+
+  <!-- Withdraw Section -->
+  <div id="withdrawSection" class="hidden">
+    <h3>Withdraw Money</h3>
+    <input type="number" id="withdrawAmount" placeholder="Amount" />
+    <button onclick="submitWithdraw()">Withdraw</button>
+    <button onclick="showSection('transactionMenu')">Back</button>
+    <p class="message" id="withdrawMsg"></p>
+  </div>
+
+  <!-- Reset PIN Section -->
+  <div id="resetPinSection" class="hidden">
+    <h3>Reset PIN</h3>
+    <input type="password" id="currentPin" placeholder="Current PIN" />
+    <input type="password" id="newPin" placeholder="New PIN" />
+    <button onclick="resetPin()">Submit</button>
+    <button onclick="showSection('transactionMenu')">Back</button>
+    <p class="message" id="resetPinMsg"></p>
+  </div>
+
+  <!-- Transaction History -->
+  <div id="transactionHistory" class="hidden">
+    <h3>Transaction History</h3>
+    <ul id="historyList"></ul>
+    <button onclick="showSection('transactionMenu')">Back</button>
+  </div>
+
+  <!-- Balance Display -->
+  <div id="balanceDisplay" class="hidden">
+    <h3>Your Balance</h3>
+    <p id="balanceAmount" style="font-size: 24px; font-weight: bold;"></p>
+    <button onclick="showSection('transactionMenu')">Back</button>
+  </div>
+
+  <!-- Exit Message -->
+  <div id="exitMsg" class="hidden" style="text-align:center;">
+    <h2>Thank you for using the ATM!</h2>
+  </div>
+
+</div>
+
+<!-- Credits Section -->
+<div class="credits">
+  <strong>Developed by:</strong>
+  Nikhil Singh (24SCSE1010124)<br/>
+  Mustehsan Nawaz (24SCSE1010978)<br/>
+  Shivam Kumar (24SCSE1010013)<br/>
+  Sanket Bhati (24SCSE1010035)
+</div>
+
+<script>
+  let accounts = {};
+  let currentUser = null;
+
+  // Load accounts from localStorage on page load
+  window.onload = function() {
+    const savedAccounts = localStorage.getItem('atmAccounts');
+    if (savedAccounts) {
+      accounts = JSON.parse(savedAccounts);
+    }
+  };
+
+  // Save accounts object to localStorage
+  function saveAccounts() {
+    localStorage.setItem('atmAccounts', JSON.stringify(accounts));
+  }
+
+  function showSection(sectionId) {
+    const sections = [
+      'mainMenu', 'createAccount', 'login', 'transactionMenu',
+      'depositSection', 'withdrawSection', 'transactionHistory',
+      'balanceDisplay', 'exitMsg', 'resetPinSection'
+    ];
+    sections.forEach(id => document.getElementById(id).classList.add('hidden'));
+    document.getElementById(sectionId).classList.remove('hidden');
+
+    ['createMsg', 'loginMsg', 'depositMsg', 'withdrawMsg', 'resetPinMsg'].forEach(id => {
+      const elem = document.getElementById(id);
+      if (elem) elem.textContent = '';
+    });
+
+    if (sectionId === 'transactionMenu' && currentUser) {
+      document.getElementById('userAcc').textContent = currentUser.accountNumber;
+    }
+  }
+
+  function backToMain() {
+    currentUser = null;
+    showSection('mainMenu');
+  }
+
+  function exitATM() {
+    currentUser = null;
+    showSection('exitMsg');
+  }
+
+  function createAccount() {
+    const accNo = document.getElementById('createAccNo').value.trim();
+    const pin = document.getElementById('createPin').value.trim();
+    const balance = parseFloat(document.getElementById('createBalance').value);
+    const msg = document.getElementById('createMsg');
+
+    if (!accNo || !pin || isNaN(balance) || balance < 0) {
+      msg.style.color = 'red';
+      msg.textContent = "Please enter valid details!";
+      return;
+    }
+    if (accounts[accNo]) {
+      msg.style.color = 'red';
+      msg.textContent = "Account number already exists!";
+      return;
+    }
+
+    accounts[accNo] = {
+      accountNumber: accNo,
+      pin: pin,
+      balance: balance,
+      transactions: []
+    };
+
+    saveAccounts();
+
+    alert("Account created successfully! Please login.");
+    document.getElementById('createAccNo').value = '';
+    document.getElementById('createPin').value = '';
+    document.getElementById('createBalance').value = '';
+    showSection('login');
+  }
+
+  function login() {
+    const accNo = document.getElementById('loginAccNo').value.trim();
+    const pin = document.getElementById('loginPin').value.trim();
+    const msg = document.getElementById('loginMsg');
+
+    if (!accounts[accNo]) {
+      msg.style.color = 'red';
+      msg.textContent = "Account not found!";
+      return;
+    }
+    if (accounts[accNo].pin !== pin) {
+      msg.style.color = 'red';
+      msg.textContent = "Incorrect PIN!";
+      return;
+    }
+
+    currentUser = accounts[accNo];
+    document.getElementById('loginAccNo').value = '';
+    document.getElementById('loginPin').value = '';
+    showSection('transactionMenu');
+  }
+
+  function logout() {
+    currentUser = null;
+    showSection('mainMenu');
+  }
+
+  function verifyPin(callback) {
+    if (!currentUser) return;
+    const inputPin = prompt("Enter your PIN:");
+    if (inputPin === currentUser.pin) {
+      callback();
+    } else {
+      alert("Incorrect PIN!");
+    }
+  }
+
+  function viewBalance() {
+    if (!currentUser) return;
+    document.getElementById('balanceAmount').textContent = "₹" + currentUser.balance.toFixed(2);
+    showSection('balanceDisplay');
+  }
+
+  function deposit() {
+    const amt = parseFloat(document.getElementById('depositAmount').value);
+    const msg = document.getElementById('depositMsg');
+
+    if (isNaN(amt) || amt <= 0) {
+      msg.style.color = 'red';
+      msg.textContent = "Enter a valid amount!";
+      return;
+    }
+
+    currentUser.balance += amt;
+    currentUser.transactions.push(Deposited ₹${amt.toFixed(2)});
+    saveAccounts();
+
+    msg.style.color = 'green';
+    msg.textContent = "Deposit successful!";
+    document.getElementById('depositAmount').value = '';
+  }
+
+  function submitWithdraw() {
+    const amt = parseFloat(document.getElementById('withdrawAmount').value);
+    const msg = document.getElementById('withdrawMsg');
+
+    if (isNaN(amt) || amt <= 0) {
+      msg.style.color = 'red';
+      msg.textContent = "Enter a valid amount!";
+      return;
+    }
+
+    if (!currentUser) return;
+    const inputPin = prompt("Enter your PIN:");
+    if (inputPin !== currentUser.pin) {
+      alert("Incorrect PIN!");
+      return;
+    }
+
+    if (amt > currentUser.balance) {
+      msg.style.color = 'red';
+      msg.textContent = "Insufficient balance!";
+      return;
+    }
+
+    currentUser.balance -= amt;
+    currentUser.transactions.push(Withdrew ₹${amt.toFixed(2)});
+    saveAccounts();
+
+    msg.style.color = 'green';
+    msg.textContent = "Withdrawal successful!";
+    document.getElementById('withdrawAmount').value = '';
+  }
+
+  function showTransactionHistory() {
+    if (!currentUser) return;
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+    if (currentUser.transactions.length === 0) {
+      historyList.innerHTML = '<li>No transactions yet.</li>';
+    } else {
+      currentUser.transactions.forEach(tx => {
+        const li = document.createElement('li');
+        li.textContent = tx;
+        historyList.appendChild(li);
+      });
+    }
+    showSection('transactionHistory');
+  }
+
+  function resetPin() {
+    if (!currentUser) return;
+    const currentPinInput = document.getElementById('currentPin').value.trim();
+    const newPinInput = document.getElementById('newPin').value.trim();
+    const msg = document.getElementById('resetPinMsg');
+
+    if (!currentPinInput || !newPinInput) {
+      msg.style.color = 'red';
+      msg.textContent = "Please fill both fields!";
+      return;
+    }
+
+    if (currentPinInput !== currentUser.pin) {
+      msg.style.color = 'red';
+      msg.textContent = "Current PIN is incorrect!";
+      return;
+    }
+
+    if (newPinInput.length < 4) {
+      msg.style.color = 'red';
+      msg.textContent = "New PIN must be at least 4 characters!";
+      return;
+    }
+
+    currentUser.pin = newPinInput;
+    saveAccounts();
+
+    msg.style.color = 'green';
+    msg.textContent = "PIN reset successful!";
+    document.getElementById('currentPin').value = '';
+    document.getElementById('newPin').value = '';
+  }
+</script>
+
+</body>
+</html>
